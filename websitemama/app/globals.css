@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #0b1329;
+  --color-brand-navy: #101d3f;
+  --color-brand-gold: #d4af37;
+  --color-brand-gold-hover: #e5c358;
+  --color-brand-surface: #f8fafc;
+}
+
+html, body {
+  height: 100%;
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Scroll Progress Bar */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #d4af37, #f59e0b, #fbbf24);
+  z-index: 100;
+  transition: width 0.1s ease-out;
+}
+
+/* Base Scroll Reveal Classes */
+.reveal {
+  opacity: 0;
+  transition: all 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.reveal-up {
+  transform: translateY(40px);
+}
+
+.reveal-left {
+  transform: translateX(-45px);
+}
+
+.reveal-right {
+  transform: translateX(45px);
+}
+
+.reveal-scale {
+  transform: scale(0.94);
+}
+
+/* Triggered State when in Viewport */
+.reveal.revealed {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+}
+
+/* Stagger Delays */
+.delay-100 { transition-delay: 100ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-400 { transition-delay: 400ms; }
