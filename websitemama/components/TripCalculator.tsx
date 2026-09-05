@@ -2,47 +2,45 @@
 
 import React, { useState } from "react";
 import { companyData } from "@/data/tourData";
-import { Calculator, Send, CheckCircle2, Bus, Hotel, Users, MapPin } from "lucide-react";
+import { Send, CheckCircle2, Bus, Users, MapPin, Wallet, Sparkles, Building2, Utensils } from "lucide-react";
 
 export default function TripCalculator() {
-  const [destination, setDestination] = useState("Lampung");
-  const [pax, setPax] = useState<number>(35);
-  const [busType, setBusType] = useState("Medium Bus Pariwisata (31-35 Kursi)");
-  const [hotelType, setHotelType] = useState("Bintang 3 (Standar Nyaman)");
+  const [destination, setDestination] = useState("");
+  const [pax, setPax] = useState<number>(30);
+  const [busType, setBusType] = useState("Medium Bus Pariwisata (Maks. 25 Kursi)");
+  const [budgetPerPax, setBudgetPerPax] = useState<number | "">(1500000);
+  const [groupName, setGroupName] = useState("");
   const [csTarget, setCsTarget] = useState<number>(0);
 
-  // Kalkulasi estimasi biaya per pax rombongan bus
-  const destBaseRate: Record<string, number> = {
-    Lampung: 950000,
-    "Padang & Bukittinggi": 1850000,
-    "Danau Toba & Medan": 2400000,
-    "Bandung & Jakarta": 1950000,
-    "Yogyakarta & Solo": 2250000,
-    "Bromo & Malang": 2750000,
-    "Bali Overland": 3450000,
+  const numericBudget = typeof budgetPerPax === "number" ? budgetPerPax : 0;
+  const estimatedTotal = numericBudget * pax;
+
+  const formatRupiah = (val: number | "") => {
+    if (val === "" || isNaN(val)) return "";
+    return val.toLocaleString("id-ID");
   };
 
-  const hotelMultiplier: Record<string, number> = {
-    "Bintang 2 (Ekonomis)": 0.88,
-    "Bintang 3 (Standar Nyaman)": 1.0,
-    "Bintang 4 (Luxury Stay)": 1.28,
+  const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawVal = e.target.value.replace(/\D/g, "");
+    if (!rawVal) {
+      setBudgetPerPax("");
+      return;
+    }
+    setBudgetPerPax(parseInt(rawVal, 10));
   };
-
-  const basePrice = destBaseRate[destination] || 1500000;
-  const multiplier = hotelMultiplier[hotelType] || 1.0;
-  const estimatedPerPerson = Math.round((basePrice * multiplier) / 10000) * 10000;
-  const estimatedTotal = estimatedPerPerson * pax;
 
   const handleSendWA = () => {
     const owner = companyData.owners[csTarget];
-    const textMessage = `Halo ${owner.name}, saya ingin konsultasi estimasi paket tour bus dari website:
-- Destinasi: ${destination}
+    const textMessage = `Halo ${owner.name}, saya ingin konsultasi rencana tour rombongan dari website:
+- Nama Rombongan: ${groupName || "Rombongan"}
+- Destinasi Tujuan: ${destination || "Belum ditentukan / Konsultasi"}
 - Jumlah Peserta: ${pax} Orang
-- Pilihan Armada: ${busType}
-- Kelas Hotel: ${hotelType}
-- Estimasi Budget: Sekitar Rp ${estimatedPerPerson.toLocaleString("id-ID")}/orang (Total: Rp ${estimatedTotal.toLocaleString("id-ID")})
+- Pilihan Bus: ${busType}
+- Target Budget: Rp ${numericBudget.toLocaleString("id-ID")}/orang (Total Dana: Rp ${estimatedTotal.toLocaleString("id-ID")})
+- Fasilitas Hotel: Disesuaikan dengan target budget rombongan
+- Fasilitas Konsumsi: Prasmanan / Nasi Kotak (menyesuaikan budget rombongan)
 
-Mohon dibantu rincian itinerary dan penawaran resminya ya, terima kasih!`;
+Mohon bantuannya untuk perancangan rute, armada bus, konsumsi, dan rekomendasinya ya. Terima kasih!`;
 
     const url = `https://wa.me/${owner.waRaw}?text=${encodeURIComponent(textMessage)}`;
     window.open(url, "_blank");
@@ -50,16 +48,16 @@ Mohon dibantu rincian itinerary dan penawaran resminya ya, terima kasih!`;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden p-6 sm:p-10">
-      <div className="flex items-center gap-3 mb-6 pb-6 border-b border-slate-100">
-        <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
-          <Calculator size={24} />
+      <div className="flex items-center gap-3.5 mb-6 pb-6 border-b border-slate-100">
+        <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold shrink-0">
+          <Users size={24} />
         </div>
         <div>
           <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-            Simulasi Estimasi Biaya Tour Bus Anda
+            Rancangan Perjalanan Tour Rombongan
           </h3>
           <p className="text-xs sm:text-sm text-slate-500">
-            Pilih preferensi perjalanan bus rombongan Anda untuk melihat gambaran bujet.
+            Formulir khusus rombongan keluarga besar, dinas/kantor, komunitas, dan study tour.
           </p>
         </div>
       </div>
@@ -67,31 +65,39 @@ Mohon dibantu rincian itinerary dan penawaran resminya ya, terima kasih!`;
       <div className="grid md:grid-cols-2 gap-8">
         {/* INPUT FORM */}
         <div className="space-y-5">
-          {/* Destinasi */}
+          {/* Nama Rombongan */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
-              <MapPin size={15} className="text-amber-500" /> Destinasi Tujuan:
+              <Sparkles size={15} className="text-amber-500" /> Nama Rombongan / Instansi:
             </label>
-            <select
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-amber-500"
-            >
-              <option value="Lampung">Lampung (Kiluan / Pahawang)</option>
-              <option value="Padang & Bukittinggi">Padang & Bukittinggi (Sumbar)</option>
-              <option value="Danau Toba & Medan">Danau Toba & Medan (Sumut)</option>
-              <option value="Bandung & Jakarta">Bandung & Jakarta</option>
-              <option value="Yogyakarta & Solo">Yogyakarta & Solo (Jawa Tengah)</option>
-              <option value="Bromo & Malang">Bromo & Malang (Jawa Timur)</option>
-              <option value="Bali Overland">Bali Overland Express</option>
-            </select>
+            <input
+              type="text"
+              placeholder="Contoh: Keluarga Besar Bpk. H. Rahmat / SMAN 1 Palembang"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-amber-500"
+            />
           </div>
 
-          {/* Jumlah Peserta Slider (Khusus Rombongan Bus: 25 - 150) */}
+          {/* Destinasi Tujuan */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
+              <MapPin size={15} className="text-amber-500" /> Destinasi Tujuan Tour:
+            </label>
+            <input
+              type="text"
+              placeholder="Contoh: Lampung, Padang, Jogja, Solo, Bali, dll."
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          {/* Jumlah Anggota Rombongan */}
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <Users size={15} className="text-amber-500" /> Jumlah Anggota Rombongan:
+                <Users size={15} className="text-amber-500" /> Jumlah Peserta Rombongan:
               </label>
               <span className="text-sm font-extrabold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
                 {pax} Orang
@@ -99,7 +105,7 @@ Mohon dibantu rincian itinerary dan penawaran resminya ya, terima kasih!`;
             </div>
             <input
               type="range"
-              min="25"
+              min="15"
               max="150"
               step="5"
               value={pax}
@@ -107,13 +113,13 @@ Mohon dibantu rincian itinerary dan penawaran resminya ya, terima kasih!`;
               className="w-full accent-amber-500 cursor-pointer"
             />
             <div className="flex justify-between text-[11px] text-slate-400 mt-1">
-              <span>25–35 Pax (1 Medium Bus)</span>
-              <span>45–50 Pax (1 Big Bus)</span>
-              <span>100+ Pax (Konvoi Bus)</span>
+              <span>Min. 15 Pax</span>
+              <span>40 Pax (1 Big Bus)</span>
+              <span>100+ Pax (Konvoi)</span>
             </div>
           </div>
 
-          {/* Tipe Bus Rekanan (Hanya Bus!) */}
+          {/* Pilihan Armada Bus */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
               <Bus size={15} className="text-amber-500" /> Pilihan Armada Bus Pariwisata:
@@ -123,25 +129,31 @@ Mohon dibantu rincian itinerary dan penawaran resminya ya, terima kasih!`;
               onChange={(e) => setBusType(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-amber-500"
             >
-              <option value="Medium Bus Pariwisata (31-35 Kursi)">Medium Bus Pariwisata (31-35 Kursi)</option>
-              <option value="Executive Big Bus (45-50 Kursi)">Executive Big Bus Pariwisata (45-50 Kursi)</option>
+              <option value="Medium Bus Pariwisata (Maks. 25 Kursi)">Medium Bus Pariwisata (Maks. 25 Kursi)</option>
+              <option value="Executive Big Bus Pariwisata (Maks. 40 Kursi)">Executive Big Bus Pariwisata (Maks. 40 Kursi)</option>
+              <option value="Lebih dari 1 Bus (Konvoi Rombongan Besar)">Lebih dari 1 Bus (Konvoi Rombongan Besar)</option>
             </select>
           </div>
 
-          {/* Kategori Hotel */}
+          {/* Input Budget per Orang */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
-              <Hotel size={15} className="text-amber-500" /> Kategori Akomodasi Hotel:
+              <Wallet size={15} className="text-amber-500" /> Target Budget per Peserta:
             </label>
-            <select
-              value={hotelType}
-              onChange={(e) => setHotelType(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-amber-500"
-            >
-              <option value="Bintang 2 (Ekonomis)">Bintang 2 (Ekonomis & Bersih)</option>
-              <option value="Bintang 3 (Standar Nyaman)">Bintang 3 (Standar Nyaman Rekomendasi)</option>
-              <option value="Bintang 4 (Luxury Stay)">Bintang 4 (Fasilitas Lengkap & Mewah)</option>
-            </select>
+            <div className="relative">
+              <span className="absolute left-3.5 top-3.5 text-sm font-bold text-slate-400">Rp</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="0"
+                value={formatRupiah(budgetPerPax)}
+                onChange={handleBudgetChange}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg py-3 pl-11 pr-3 text-sm font-bold text-slate-800 focus:outline-none focus:border-amber-500"
+              />
+            </div>
+            <span className="text-[11px] text-slate-400 mt-1 block">
+              Bisa dihapus sampai kosong dan otomatis memakai format ribuan (contoh: 1.000.000).
+            </span>
           </div>
         </div>
 
@@ -151,29 +163,35 @@ Mohon dibantu rincian itinerary dan penawaran resminya ya, terima kasih!`;
 
           <div>
             <span className="text-[11px] font-bold uppercase tracking-widest text-amber-400 block mb-1">
-              Hasil Simulasi Estimasi Bus
+              Rangkuman Rencana Tour Rombongan
             </span>
             <div className="text-3xl sm:text-4xl font-extrabold text-white mb-1">
-              Rp {estimatedPerPerson.toLocaleString("id-ID")}
-              <span className="text-xs text-slate-400 font-normal"> / orang</span>
+              Rp {numericBudget.toLocaleString("id-ID")}
+              <span className="text-xs text-slate-400 font-normal"> / peserta</span>
             </div>
             <p className="text-xs text-slate-400 mb-6">
-              Total estimasi rombongan ({pax} pax):{" "}
-              <strong className="text-amber-300">Rp {estimatedTotal.toLocaleString("id-ID")}</strong>
+              Total perkiraan alokasi dana rombongan ({pax} orang):{" "}
+              <strong className="text-amber-300 font-bold block sm:inline text-sm sm:text-xs">
+                Rp {estimatedTotal.toLocaleString("id-ID")}
+              </strong>
             </p>
 
             <div className="space-y-2.5 py-4 border-t border-white/10 text-xs text-slate-300">
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
-                <span>Unit Bus AC Pariwisata Prima + Driver & Solar</span>
+                <span>Unit Bus Pariwisata AC Rekanan + Driver & BBM</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Building2 size={15} className="text-amber-400 shrink-0" />
+                <span className="text-amber-200 font-medium">Hotel/Penginapan disesuaikan dengan alokasi budget</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Utensils size={15} className="text-amber-400 shrink-0" />
+                <span className="text-amber-200 font-medium">Konsumsi prasmanan atau nasi kotak (menyesuaikan budget)</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
-                <span>Akomodasi kamar hotel sesuai pilihan</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
-                <span>Tiket masuk seluruh objek wisata utama</span>
+                <span>Tiket masuk objek wisata & koordinasi lapangan</span>
               </div>
               <div className="flex items-center gap-2 font-medium text-amber-300">
                 <CheckCircle2 size={15} className="text-amber-400 shrink-0" />
@@ -185,7 +203,7 @@ Mohon dibantu rincian itinerary dan penawaran resminya ya, terima kasih!`;
           <div className="mt-8">
             <div className="mb-3">
               <label className="text-[11px] font-bold uppercase text-slate-400 block mb-1.5">
-                Kirim Rancangan Ini Ke:
+                Konsultasikan Rencana Ini Ke:
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -218,10 +236,10 @@ Mohon dibantu rincian itinerary dan penawaran resminya ya, terima kasih!`;
               onClick={handleSendWA}
               className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-lg"
             >
-              <Send size={15} /> Ajukan Rancangan ke WhatsApp
+              <Send size={15} /> Ajukan Rancangan Rombongan ke WhatsApp
             </button>
             <span className="text-[10px] text-slate-400 text-center block mt-2">
-              *Harga final disesuaikan dengan tanggal & detail permintaan rombongan bus.
+              *Rencana rute, jadwal dan fasilitas akan disesuaikan kembali saat konsultasi.
             </span>
           </div>
         </div>
