@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description:
     "Biro perjalanan wisata bus terpadu Palembang yang dikelola langsung oleh Ibu Marlin & Ibu Desi. Melayani tour rombongan bus medium & big bus ke Sumatera, Jawa, Bali, dan Lombok.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon.svg",
   },
 };
 
